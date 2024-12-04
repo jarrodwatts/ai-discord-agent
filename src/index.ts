@@ -1,74 +1,53 @@
 import 'dotenv/config';
 import OpenAI from "openai";
-import readline from 'readline';
 import { createAssistant } from './openai/createAssistant.js';
 import { createThread } from './openai/createThread.js';
-import { createRun } from './openai/createRun.js';
-import { performRun } from './openai/performRun.js';
-import { Thread } from 'openai/resources/beta/threads/threads';
-import { Assistant } from 'openai/resources/beta/assistants';
-
-const client = new OpenAI();
-
-// Create interface for reading from command line
-const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout
-});
-
-// Type-safe promise-based question function
-const question = (query: string): Promise<string> => {
-    return new Promise((resolve) => rl.question(query, resolve));
-};
-
-async function chat(thread: Thread, assistant: Assistant): Promise<void> {
-    while (true) {
-        // Get user input
-        const userInput = await question('\nYou: ');
-
-        // Allow user to exit
-        if (userInput.toLowerCase() === 'exit') {
-            rl.close();
-            break;
-        }
-
-        try {
-            // Add the user's message to the thread
-            await client.beta.threads.messages.create(thread.id, {
-                role: "user",
-                content: userInput
-            });
-
-            // Create and perform the run
-            const run = await createRun(client, thread, assistant.id);
-            const result = await performRun(run, client, thread);
-
-            if (result?.type === 'text') {
-                console.log('\nAlt:', result.text.value);
-            }
-        } catch (error) {
-            console.error('Error during chat:', error instanceof Error ? error.message : 'Unknown error');
-            rl.close();
-            break;
-        }
-    }
-}
+import { discordClient } from './discord/discordClient.js';
+import { VoiceChannel } from 'discord.js';
+import { VoiceHandler } from './discord/VoiceHandler.js';
+import { getDiscordGuild, channelId } from './const/discordDetails.js';
 
 async function main(): Promise<void> {
-    try {
-        const assistant = await createAssistant(client);
-        const thread = await createThread(client);
+    const openaiClient = new OpenAI();
 
-        console.log('Chat started! Type "exit" to end the conversation.');
-        await chat(thread, assistant);
+    try {
+        console.log('🚀 Starting bot initialization...');
+
+        console.log('🤖 Creating OpenAI assistant...');
+        const assistant = await createAssistant(openaiClient);
+        console.log(`✅ Assistant created with ID: ${assistant.id}`);
+
+        console.log('🧵 Creating initial thread...');
+        const thread = await createThread(openaiClient);
+        console.log(`✅ Thread created with ID: ${thread.id}`);
+
+
+        console.log('🔑 Logging into Discord...');
+        await discordClient.login(process.env.DISCORD_API_TOKEN);
+
+        console.log('🔑 Getting Discord guild...');
+        const discordGuild = await getDiscordGuild();
+        console.log('✅ Discord guild fetched');
+
+        console.log(`🔑 Getting voice channel: ${channelId}`);
+        const voiceChannel = discordGuild.channels.cache.get(channelId) as VoiceChannel;
+        console.log(`✅ Voice channel fetched: ${voiceChannel.name}`);
+
+        // Initialize voice handler
+        const voiceHandler = new VoiceHandler(openaiClient, discordClient, thread, assistant, discordGuild, voiceChannel);
+        console.log('🔊 Initializing voice handler...');
+
+        // Immediately join voice channel
+        await voiceHandler.joinChannel(voiceChannel);
+        console.log('✅ Voice handler initialized and joined voice channel!');
+
     } catch (error) {
-        console.error('Error in main:', error instanceof Error ? error.message : 'Unknown error');
-        rl.close();
+        console.error('❌ Error in main:', error instanceof Error ? error.message : 'Unknown error');
         process.exit(1);
     }
 }
 
 main().catch((error) => {
-    console.error('Unhandled error:', error instanceof Error ? error.message : 'Unknown error');
+    console.error('💥 Unhandled error:', error instanceof Error ? error.message : 'Unknown error');
     process.exit(1);
 });

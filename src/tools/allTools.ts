@@ -1,3 +1,4 @@
+
 export interface ToolConfig<T = any> {
     definition: {
         type: 'function';
@@ -15,5 +16,4 @@ export interface ToolConfig<T = any> {
 }
 
 export const tools: Record<string, ToolConfig> = {
-
 };
