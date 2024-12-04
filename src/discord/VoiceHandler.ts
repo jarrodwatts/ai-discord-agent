@@ -16,6 +16,8 @@ import { Thread } from 'openai/resources/beta/threads/threads';
 import { createRun } from '../openai/createRun.js';
 import { performRun } from '../openai/performRun.js';
 import { Assistant } from 'openai/resources/beta/assistants.mjs';
+import { ElevenLabsClient } from "elevenlabs";
+import { ELEVEN_LABS_VOICE_ID } from '../const/elevenLabs.js';
 
 export class VoiceHandler {
     // Discord connection
@@ -140,17 +142,31 @@ export class VoiceHandler {
                         const result = await performRun(run, this.openaiClient, this.thread);
 
                         if (result?.type === 'text') {
-                            console.log('🔊 Converting response to speech...');
-                            const speech = await this.openaiClient.audio.speech.create({
-                                model: "tts-1",
-                                voice: "alloy",
-                                input: result.text.value,
-                            });
+                            console.log('🔊 Converting response to speech with ElevenLabs...');
+                            const elevenLabsClient = new ElevenLabsClient({ apiKey: process.env.ELEVENLABS_API_KEY });
 
-                            console.log('🎵 Playing response...');
-                            const buffer = Buffer.from(await speech.arrayBuffer());
-                            const audioResource = createAudioResource(Readable.from(buffer));
+                            const speech = await elevenLabsClient.textToSpeech.convert(
+                                ELEVEN_LABS_VOICE_ID,
+                                {
+                                    text: result.text.value,
+                                    voice_settings: {
+                                        similarity_boost: 1,
+                                        stability: 0.5,
+                                        style: 0.5,
+                                        use_speaker_boost: true
+                                    },
+                                    enable_logging: true,
+                                    model_id: 'eleven_multilingual_v2',
+                                },
+                            );
+
+                            // Convert the response into a Node.js readable stream
+                            const readableStream = Readable.from(speech);
+                            const audioResource = createAudioResource(readableStream);
                             this.player.play(audioResource);
+
+                        } else {
+                            console.error('❌ Error: Speech conversion did not return a valid Readable stream');
                         }
                     }
                 } catch (error) {
