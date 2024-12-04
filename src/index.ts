@@ -30,7 +30,11 @@ async function main(): Promise<void> {
         console.log('✅ Discord guild fetched');
 
         console.log(`🔑 Getting voice channel: ${channelId}`);
-        const voiceChannel = discordGuild.channels.cache.get(channelId) as VoiceChannel;
+        const channel = await discordGuild.channels.fetch(channelId);
+        if (!channel?.isVoiceBased()) {
+            throw new Error(`Could not find voice channel with ID: ${channelId}`);
+        }
+        const voiceChannel = channel as VoiceChannel;
         console.log(`✅ Voice channel fetched: ${voiceChannel.name}`);
 
         // Initialize voice handler
