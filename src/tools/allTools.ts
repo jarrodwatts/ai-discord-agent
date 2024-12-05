@@ -1,3 +1,6 @@
+import { deployErc20Tool } from "./deployErc20.js";
+import { getBalanceTool } from "./getBalance.js";
+import { getWalletAddressTool } from "./getWalletAddress.js";
 
 export interface ToolConfig<T = any> {
     definition: {
@@ -16,4 +19,7 @@ export interface ToolConfig<T = any> {
 }
 
 export const tools: Record<string, ToolConfig> = {
+    get_balance: getBalanceTool,
+    get_wallet_address: getWalletAddressTool,
+    deploy_erc20_token: deployErc20Tool
 };

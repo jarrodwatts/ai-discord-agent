@@ -1,28 +1,25 @@
-# Onchain Agent
+# Discord AI Agent
 
-An AI-powered blockchain agent that can interact with the Abstract Testnet blockchain. Built with OpenAI's Assistant API and viem.
+An AI-powered Discord bot that you can speak to inside a Discord voice channel.
+
+To see how this was made, check out my [video tutorial](https://www.youtube.com/watch?v=xjRqmy6p1-c).
 
 ## Features
 
 - AI Assistant powered by [OpenAI's Assistant API](https://platform.openai.com/docs/assistants/overview) with custom personality
+- Voice interactions with Discord powered by [Discord.js](https://discord.js.org/), [OpenAI's Whisper API](https://platform.openai.com/docs/guides/speech-recognition) and [ElevenLabs](https://elevenlabs.io/).
 - Direct blockchain interactions through [Viem](https://viem.sh/)
-- Support for:
-  - ERC20 token deployments and interactions
-  - Contract reading and writing
-  - Balance checking
-  - Transaction management
-  - Uniswap V3 pool creation
-
-## Prerequisites
-
-- Node.js (v18 or higher)
-- TypeScript
-- An OpenAI API key
-- A wallet private key for the agent
 
 ## Getting Started
 
-1. [Clone](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) the repository:
+1. Important: Node.js version 22.x is required. Recommend using [nvm](https://github.com/nvm-sh/nvm) to install it.
+
+```bash
+nvm install 22
+nvm use 22
+```
+
+2. [Clone](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) the repository:
 
 ```bash
 git clone https://github.com/jarrodwatts/onchain-agent.git
@@ -36,14 +33,34 @@ cd onchain-agent
 npm install
 ```
 
-3. Create the `.env` file and add your OpenAI API key and wallet private key:
+3. Create a [Discord bot](https://discord.com/developers/docs/getting-started) and get your application and the API token.
+
+4. Sign up for OpenAI and get your API key.
+
+5. For blockchain interactions, you'll need a wallet private key. Please DO NOT use a wallet with any real funds.
+
+6. Sign up for ElevenLabs and get your API key and pick a voice ID.
+
+7. Create the `.env` file and add your OpenAI API key and wallet private key:
 
 ```bash
-OPENAI_API_KEY=your_openai_api_key
-PRIVATE_KEY=your_wallet_private_key
+# OpenAI
+OPENAI_API_KEY=
+
+# Wallet
+PRIVATE_KEY=
+
+# Discord
+DISCORD_APPLICATION_ID=
+DISCORD_API_TOKEN=
+
+# Elevenlabs
+ELEVENLABS_API_KEY=
+ELEVENLABS_VOICE_ID=
+
 ```
 
-4. Run the agent:
+8. Run the agent:
 
 ```bash
 npm start

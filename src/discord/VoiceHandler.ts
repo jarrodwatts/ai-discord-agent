@@ -91,7 +91,7 @@ export class VoiceHandler {
             const audioStream = receiver.subscribe(userId, {
                 end: {
                     behavior: EndBehaviorType.AfterSilence,
-                    duration: 500,
+                    duration: 1500,
                 },
             });
 
